@@ -14,8 +14,10 @@ jobs:
         env:
           NEOCITIES_API_KEY: ${{ secrets.NEOCITIES_API_KEY }}
         run: |
-          curl -sf -H "Authorization: Bearer $NEOCITIES_API_KEY" \
-            -F "index.html=@index.html" \
-            -F "style.css=@style.css" \
-            -F "neocities.png=@neocities.png" \
+          args=()
+          while IFS= read -r -d '' f; do
+            rel="${f#./}"
+            args+=(-F "${rel}=@${f}")
+          done < <(find . -type f -not -path './.git/*' -not -path './.github/*' -print0)
+          curl -sf -H "Authorization: Bearer $NEOCITIES_API_KEY" "${args[@]}" \
             https://neocities.org/api/upload
